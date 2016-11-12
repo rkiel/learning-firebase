@@ -43,5 +43,7 @@ On the Rules tab, update the default rules (for learning purposes only)
 #### Console
 
     var database = firebase.database();
-    var ref = database.ref();
-    ref.on('child_added', function(snapshot) { console.log(snapshot.val()); });
+    var itemsRef = database.ref('items');
+    itemsRef.push({first: 'Terry', last: 'Brown'});
+    itemsRef.on('child_added', function(snapshot) { console.log(snapshot.val()); });
+    itemsRef.push({first: 'Geddy', last: 'Lee'});
