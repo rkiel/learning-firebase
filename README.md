@@ -49,17 +49,20 @@ On the Rules tab, update the default rules (for learning purposes only)
     itemsRef.push({first: 'Terry', last: 'Brown'});
     itemsRef.push({first: 'Geddy', last: 'Lee'});
 
+    child = itemsRef.child("111-22-3333");
+    child.set({first: 'Alex', last: 'Lifeson'});
+
     // READ
     itemsRef.on('child_added', function(snapshot) { console.log('ADD',snapshot.val()); });
 
     // UPDATE
     itemsRef.on('child_changed', function(snapshot) { console.log('CHANGE',snapshot.val()); });
-    childRef = itemsRef.child("AXDEDXSFFDDXDDCCCCC");
-    childRef.update({last: 'Blue'});
+    childRef = itemsRef.child("111-22-3333");
+    childRef.update({first: 'Neil', last: 'Peart'});
 
     // DELETE
     itemsRef.on('child_removed', function(snapshot) { console.log('REMOVED',snapshot.val()); });
-    childRef = itemsRef.child("AXDEDXSFFDDXDDCCCCC");
+    childRef = itemsRef.child("111-22-3333");
     childRef.remove();
 
 
