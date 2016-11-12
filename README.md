@@ -44,9 +44,24 @@ On the Rules tab, update the default rules (for learning purposes only)
 
     var database = firebase.database();
     var itemsRef = database.ref('items');
+
+    // CREATE  
     itemsRef.push({first: 'Terry', last: 'Brown'});
-    itemsRef.on('child_added', function(snapshot) { console.log('ADD',snapshot.val()); });
-    itemsRef.on('child_changed', function(snapshot) { console.log('CHANGE',snapshot.val()); });
-    itemsRef.on('child_removed', function(snapshot) { console.log('REMOVED',snapshot.val()); });
-    itemsRef.on('child_moved', function(snapshot) { console.log('MOVED',snapshot.val()); });
     itemsRef.push({first: 'Geddy', last: 'Lee'});
+
+    // READ
+    itemsRef.on('child_added', function(snapshot) { console.log('ADD',snapshot.val()); });
+
+    // UPDATE
+    itemsRef.on('child_changed', function(snapshot) { console.log('CHANGE',snapshot.val()); });
+    childRef = itemsRef.child("AXDEDXSFFDDXDDCCCCC");
+    childRef.update({last: 'Blue'});
+
+    // DELETE
+    itemsRef.on('child_removed', function(snapshot) { console.log('REMOVED',snapshot.val()); });
+    childRef = itemsRef.child("AXDEDXSFFDDXDDCCCCC");
+    childRef.remove();
+
+
+    // OTHER EVENTS
+    itemsRef.on('child_moved', function(snapshot) { console.log('MOVED',snapshot.val()); });
