@@ -5,12 +5,17 @@
   <meta charset="utf-8">
   <title>LiveLinks</title>
   <script src="https://www.gstatic.com/firebasejs/3.6.0/firebase.js"></script>
-  <script src="app.js"></script>
+  <script src="https://unpkg.com/react@latest/dist/react.js"></script>
+  <script src="https://unpkg.com/react-dom@latest/dist/react-dom.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
 </head>
 
 <body>
 
   <h1>LiveLinks</h1>
+
+  <div id="root"></div>
+
 
   <script>
     // Initialize Firebase
@@ -23,6 +28,99 @@
     };
     firebase.initializeApp(config);
   </script>
+
+
+
+
+  <script type="text/babel">
+  class Item extends React.Component {
+    constructor(props) {
+      super(props);
+    }
+    render() {
+      return <li>{this.props.item.value.first + ' ' + this.props.item.value.last}</li>;
+    }
+  }
+
+  class Welcome extends React.Component {
+    constructor(props) {
+      super(props);
+      this.state = {first: '', last: '', items: []};
+    }
+    componentDidMount() {
+      const database = firebase.database();
+      const itemsRef = database.ref('items');
+
+      // poor man's immutable
+      itemsRef.on('child_added', snapshot => {
+        const item = {key: snapshot.key, value: snapshot.val()};
+        const items = this.state.items.concat(item);
+        this.setState({ items: items});
+      });
+
+      // poor man's immutable
+      itemsRef.on('child_removed', snapshot => {
+        const newItems = [];
+        this.state.items.forEach(item => {
+          if (item.key === snapshot.key) {
+
+          } else {
+            newItems.push(item);
+          }
+        });
+        this.setState({ items: newItems});
+      });
+
+      // poor man's immutable
+      itemsRef.on('child_changed', snapshot => {
+        const newItems = [];
+        this.state.items.forEach(item => {
+          if (item.key === snapshot.key) {
+            newItems.push({key: snapshot.key, value: snapshot.val()});
+          } else {
+            newItems.push(item);
+          }
+        });
+        this.setState({ items: newItems});
+      });
+
+    }
+    handleFirst(e) {
+      this.setState({first: e.target.value});
+    }
+    handleLast(e) {
+      this.setState({last: e.target.value});
+    }
+    add() {
+      const database = firebase.database();
+      const itemsRef = database.ref('items');
+      itemsRef.push({first: this.state.first, last: this.state.last});
+    }
+    render() {
+      return <div>
+      <input type="text" value={this.state.first} onChange={this.handleFirst.bind(this)}/>
+      <input type="text" value={this.state.last} onChange={this.handleLast.bind(this)}/>
+      <button type="button" onClick={this.add.bind(this)}>Add</button>
+
+      <ul>
+      {this.state.items.map(x => {
+        return <Item key={x.key} item={x} />
+      })}
+      </ul>
+      </div>
+    }
+  }
+
+
+
+    const hello = <h1>Hello World</h1>;
+
+    ReactDOM.render(<Welcome />, document.getElementById('root') );
+  </script>
+
+
+
+
 
 </body>
 
