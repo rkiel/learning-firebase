@@ -2,9 +2,14 @@
 
 To add Firebase to your app, you'll need a Firebase project, the Firebase SDK, and a short snippet of initialization code that has a few details about your project.
 
+## Firebase dashboard
 
+### Home
 
-Add Firebase to your web app
+#### Generate sample code to initialize your application.
+
+* click the Home icon
+* click __Add Firebase to your web app__
 
     <script src="https://www.gstatic.com/firebasejs/3.5.2/firebase.js"></script>
     <script>
@@ -20,7 +25,11 @@ Add Firebase to your web app
       firebase.initializeApp(config);
     </script>
 
-Update the default rules (for learning purposes only)
+### Database
+
+#### Rules
+
+On the Rules tab, update the default rules (for learning purposes only)
 
     {
       "rules": {
@@ -29,7 +38,9 @@ Update the default rules (for learning purposes only)
       }
     }
 
-In Chrome console.
+## Chrome
+
+#### Console
 
     var database = firebase.database();
     var ref = database.ref();
