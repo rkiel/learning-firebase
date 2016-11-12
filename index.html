@@ -37,8 +37,23 @@
     constructor(props) {
       super(props);
     }
+    remove() {
+      const database = firebase.database();
+      const itemsRef = database.ref('items');
+      const childRef = itemsRef.child(this.props.item.key);
+      childRef.remove();
+    }
+    load() {
+      this.props.handleLoad(this.props.item);
+    }
     render() {
-      return <li>{this.props.item.value.first + ' ' + this.props.item.value.last}</li>;
+      return (
+        <div>
+          <li>
+            <button style={{marginRight: '15px'}} type="button" onClick={this.remove.bind(this)}>Remove</button>
+            <span onClick={this.load.bind(this)}>{this.props.item.value.first + ' ' + this.props.item.value.last}</span>
+          </li>
+        </div>);
     }
   }
 
@@ -49,7 +64,7 @@
     }
     componentDidMount() {
       const database = firebase.database();
-      const itemsRef = database.ref('items');
+      const itemsRef = database.ref('items').orderByChild('last');
 
       // poor man's immutable
       itemsRef.on('child_added', snapshot => {
@@ -95,19 +110,63 @@
       const database = firebase.database();
       const itemsRef = database.ref('items');
       itemsRef.push({first: this.state.first, last: this.state.last});
+      this.setState({key: undefined, first: '', last: ''})
+    }
+    update() {
+      const database = firebase.database();
+      const itemsRef = database.ref('items');
+      const childRef = itemsRef.child(this.state.key);
+      childRef.update({first: this.state.first, last: this.state.last});
+      this.setState({key: undefined, first: '', last: ''})
+    }
+    load(item) {
+      this.setState({
+        key: item.key,
+        first: item.value.first,
+        last: item.value.last
+      });
+    }
+    clear() {
+      this.setState({
+        key: undefined,
+        first: '',
+        last: ''
+      });
     }
     render() {
-      return <div>
-      <input type="text" value={this.state.first} onChange={this.handleFirst.bind(this)}/>
-      <input type="text" value={this.state.last} onChange={this.handleLast.bind(this)}/>
-      <button type="button" onClick={this.add.bind(this)}>Add</button>
+      let buttonLabel;
+      let buttonClick;
+      if (this.state.key)  {
+        buttonClick = this.update.bind(this);
+        buttonLabel = 'Update';
+      } else {
+        buttonClick = this.add.bind(this);
+        buttonLabel = 'Add';
+      }
+      return (
+      <div>
+        <div>
+          <label>First: </label>
+          <input type="text" value={this.state.first} onChange={this.handleFirst.bind(this)}/>
+        </div>
+        <div>
+          <label>Last: </label>
+          <input type="text" value={this.state.last} onChange={this.handleLast.bind(this)}/>
+        </div>
+        <div>
+          <button type="button" onClick={buttonClick}>{buttonLabel}</button>
+          <button type="button" onClick={this.clear.bind(this)}>Clear</button>
+        </div>
 
-      <ul>
-      {this.state.items.map(x => {
-        return <Item key={x.key} item={x} />
-      })}
-      </ul>
+        <h2>Names</h2>
+
+        <ul>
+        {this.state.items.map(x => {
+          return <Item key={x.key} item={x} handleLoad={this.load.bind(this)}/>
+        })}
+        </ul>
       </div>
+    );
     }
   }
 
