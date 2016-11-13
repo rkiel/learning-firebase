@@ -38,10 +38,7 @@
       super(props);
     }
     remove() {
-      const database = firebase.database();
-      const itemsRef = database.ref('items');
-      const childRef = itemsRef.child(this.props.item.key);
-      childRef.remove();
+      this.props.handleRemove(this.props.item);
     }
     load() {
       this.props.handleLoad(this.props.item);
@@ -119,6 +116,12 @@
       childRef.update({first: this.state.first, last: this.state.last});
       this.setState({key: undefined, first: '', last: ''})
     }
+    remove(item) {
+      const database = firebase.database();
+      const itemsRef = database.ref('items');
+      const childRef = itemsRef.child(item.key);
+      childRef.remove();
+    }
     load(item) {
       this.setState({
         key: item.key,
@@ -162,7 +165,7 @@
 
         <ul>
         {this.state.items.map(x => {
-          return <Item key={x.key} item={x} handleLoad={this.load.bind(this)}/>
+          return <Item key={x.key} item={x} handleRemove={this.remove.bind(this)} handleLoad={this.load.bind(this)}/>
         })}
         </ul>
       </div>
