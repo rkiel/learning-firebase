@@ -29,7 +29,16 @@ To add Firebase to your app, you'll need a Firebase project, the Firebase SDK, a
 
 #### Rules
 
-On the Rules tab, update the default rules (for learning purposes only)
+On the Rules tab, change the default rules:
+
+    {
+      "rules": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    }
+
+To the following rules (for quick, learning purposes only)
 
     {
       "rules": {
