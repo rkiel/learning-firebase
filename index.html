@@ -33,6 +33,58 @@
 
 
   <script type="text/babel">
+
+
+  class Login extends React.Component {
+    constructor(props) {
+      super(props);
+      this.state = {currentUser: this.props.currentUser, email: '', password: ''};
+    }
+    componentDidMount() {
+      this.props.onAuthenticate();
+    }
+    login() {
+      this.props.onLogin(this.state.email, this.state.password);
+      this.setState({currentUser: true, email: '', password: ''});
+    }
+    logout() {
+      this.props.onLogout();
+      this.setState({currentUser: undefined, email: '', password: ''});
+    }
+    render() {
+      let button;
+      if (this.state.currentUser) {
+          button = <button type="button" onClick={this.logout.bind(this)}>Logout</button>
+      } else {
+          button = <button type="button" onClick={this.login.bind(this)}>Login</button>
+      }
+
+      const loginPanel =  (
+          <div>
+            <h2>Login</h2>
+            <div>
+              <label>Email: </label>
+              <input type="text" value={this.state.email} onChange={e => this.setState({email: e.target.value})}/>
+            </div>
+            <div>
+              <label>Password: </label>
+              <input type="password" value={this.state.password} onChange={e => this.setState({password: e.target.value})}/>
+            </div>
+          </div>
+        );
+        const logoutPanel = (
+          <div></div>
+        );
+      return (
+        <div>
+          {this.state.currentUser ? logoutPanel : loginPanel}
+          <div>
+            {button}
+          </div>
+        </div>);
+    }
+  }
+
   class Item extends React.Component {
     constructor(props) {
       super(props);
@@ -57,43 +109,80 @@
   class Welcome extends React.Component {
     constructor(props) {
       super(props);
-      this.state = {first: '', last: '', items: []};
+      this.state = {first: '', last: '', items: [], currentUser: undefined};
     }
+
     componentDidMount() {
+      this.setState({currentUser: firebase.auth().currentUser});
+    }
+    handleLogin(email, password) {
+      firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .catch(error => {
+        console.error("Error", error)
+        this.setState({currentUser: undefined});
+      });
+    }
+    handleLogout() {
+      firebase
+      .auth()
+      .signOut()
+      .then(() => {
+        this.setState({currentUser: undefined});
+      })
+      .catch(error => {
+        console.error("Error", error)
+        this.setState({currentUser: undefined});
+      });
+    }
+    handleAuthenticate() {
       const database = firebase.database();
-      const itemsRef = database.ref('items').orderByChild('last');
 
-      // poor man's immutable
-      itemsRef.on('child_added', snapshot => {
-        const item = {key: snapshot.key, value: snapshot.val()};
-        const items = this.state.items.concat(item);
-        this.setState({ items: items});
-      });
+      firebase
+      .auth()
+      .onAuthStateChanged(user => {
+        if (user) {
+          console.log("User", user);
+          this.setState({currentUser: user});
 
-      // poor man's immutable
-      itemsRef.on('child_removed', snapshot => {
-        const newItems = [];
-        this.state.items.forEach(item => {
-          if (item.key === snapshot.key) {
+          const itemsRef = database.ref('items').orderByChild('last');
 
-          } else {
-            newItems.push(item);
-          }
-        });
-        this.setState({ items: newItems});
-      });
+          // poor man's immutable
+          itemsRef.on('child_added', snapshot => {
+            const item = {key: snapshot.key, value: snapshot.val()};
+            const items = this.state.items.concat(item);
+            this.setState({ items: items});
+          });
 
-      // poor man's immutable
-      itemsRef.on('child_changed', snapshot => {
-        const newItems = [];
-        this.state.items.forEach(item => {
-          if (item.key === snapshot.key) {
-            newItems.push({key: snapshot.key, value: snapshot.val()});
-          } else {
-            newItems.push(item);
-          }
-        });
-        this.setState({ items: newItems});
+          // poor man's immutable
+          itemsRef.on('child_removed', snapshot => {
+            const newItems = [];
+            this.state.items.forEach(item => {
+              if (item.key === snapshot.key) {
+
+              } else {
+                newItems.push(item);
+              }
+            });
+            this.setState({ items: newItems});
+          });
+
+          // poor man's immutable
+          itemsRef.on('child_changed', snapshot => {
+            const newItems = [];
+            this.state.items.forEach(item => {
+              if (item.key === snapshot.key) {
+                newItems.push({key: snapshot.key, value: snapshot.val()});
+              } else {
+                newItems.push(item);
+              }
+            });
+            this.setState({ items: newItems});
+          });
+        } else {
+          this.setState({currentUser: undefined});
+        }
       });
 
     }
@@ -148,6 +237,12 @@
       }
       return (
       <div>
+        <Login currentUser={this.state.currentUser}
+               onAuthenticate={this.handleAuthenticate.bind(this)}
+               onLogin={this.handleLogin.bind(this)}
+               onLogout={this.handleLogout.bind(this)}/>
+
+        <h2>{buttonLabel} User</h2>
         <div>
           <label>First: </label>
           <input type="text" value={this.state.first} onChange={this.handleFirst.bind(this)}/>
@@ -172,10 +267,6 @@
     );
     }
   }
-
-
-
-    const hello = <h1>Hello World</h1>;
 
     ReactDOM.render(<Welcome />, document.getElementById('root') );
   </script>
